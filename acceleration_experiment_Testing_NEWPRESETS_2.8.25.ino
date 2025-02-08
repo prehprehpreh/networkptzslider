@@ -61,6 +61,9 @@ void setup() {
 void loop() {
     handleUDPRequests();
     controlStepperMotors();
+
+
+  
 }
 
 void handleUDPRequests() {
@@ -239,8 +242,6 @@ void recallPresetA() {
     stepper2.moveTo(targetPositions[1]);
     stepper3.moveTo(targetPositions[2]);
 
-    lcd.print("stepper1:" + targetPositions[0] + " stepper2:" + targetPositions[1] + " stepper3:" + targetPositions[2]);
-
     syncMove(4000, 2000);
 
     // Send UDP confirmation
@@ -310,7 +311,6 @@ void syncMove(float maxSpeed, float accel)
         if (stepper3.distanceToGo() != 0)
             stepper3.run();
     }
-    return;
 }
 
 // `calcSync()` function to determine proportional speed
