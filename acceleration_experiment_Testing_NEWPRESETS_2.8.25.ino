@@ -317,6 +317,7 @@ void syncMove(float maxSpeed, float accel)
         if (stepper3.distanceToGo() != 0)
             stepper3.run();
     }
+    return;
 }
 
 // `calcSync()` function to determine proportional speed
