@@ -295,13 +295,13 @@ void syncMove(float maxSpeed, float accel)
 
     // Set synchronized speeds and accelerations
     stepper1.setMaxSpeed(calcSync(maxSpeed, accel, biggestDistance, stepper1));
-    stepper1.setAcceleration(calcSync(maxSpeed, accel, biggestDistance, stepper1) / 2);
+    //stepper1.setAcceleration(calcSync(maxSpeed, accel, biggestDistance, stepper1) / 2);
 
     stepper2.setMaxSpeed(calcSync(maxSpeed, accel, biggestDistance, stepper2));
-    stepper2.setAcceleration(calcSync(maxSpeed, accel, biggestDistance, stepper2) / 2);
+    //stepper2.setAcceleration(calcSync(maxSpeed, accel, biggestDistance, stepper2) / 2);
 
     stepper3.setMaxSpeed(calcSync(maxSpeed, accel, biggestDistance, stepper3));
-    stepper3.setAcceleration(calcSync(maxSpeed, accel, biggestDistance, stepper3) / 2);
+    //stepper3.setAcceleration(calcSync(maxSpeed, accel, biggestDistance, stepper3) / 2);
 
     // Move the steppers in sync
     while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || stepper3.distanceToGo() != 0)
@@ -313,6 +313,9 @@ void syncMove(float maxSpeed, float accel)
         if (stepper3.distanceToGo() != 0)
             stepper3.run();
     }
+    stepper1.setMaxSpeed(msSpeed);
+    stepper2.setMaxSpeed(msSpeed);
+    stepper3.setMaxSpeed(msSpeed);
     lcd.setCursor(0, 0);
     lcd.print("DistanceToGo");
     return;
