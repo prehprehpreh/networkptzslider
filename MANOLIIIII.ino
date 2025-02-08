@@ -320,6 +320,9 @@ void syncMove(float maxSpeed, float accel)
     stepper1.setMaxSpeed(maxSpeed);
     stepper2.setMaxSpeed(maxSpeed);
     stepper3.setMaxSpeed(maxSpeed);
+    stepper1.setAcceleration(accel);
+    stepper2.setAcceleration(accel);
+    stepper3.setAcceleration(accel);
     return;
 }
 
