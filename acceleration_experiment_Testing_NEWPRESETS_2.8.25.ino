@@ -268,10 +268,16 @@ void recallPresetB() {
     // Otherwise, move to preset B positions
     long targetPositions[] = { presetBPositions[0], presetBPositions[1], presetBPositions[2] };
 
-    stepper1.moveTo(targetPositions[0]);
-    stepper2.moveTo(targetPositions[1]);
-    stepper3.moveTo(targetPositions[2]);
-
+    if (abs(stepper1.currentPosition() - presetAPositions[0]) > tolerance) {
+        stepper1.moveTo(targetPositions[0]);
+    }
+    if (abs(stepper2.currentPosition() - presetAPositions[0]) > tolerance) {
+        stepper2.moveTo(targetPositions[1]);
+    }
+    if (abs(stepper2.currentPosition() - presetAPositions[0]) > tolerance) {
+        stepper3.moveTo(targetPositions[2]);
+    }
+    
     syncMove(4000, 2000);
 
     // Send UDP confirmation
