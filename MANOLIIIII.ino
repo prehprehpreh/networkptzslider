@@ -306,8 +306,6 @@ void syncMove(float maxSpeed, float accel)
     // Move the steppers in sync
     while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || stepper3.distanceToGo() != 0)
     {
-        lcd.setCursor(0, 0);
-        lcd.print("DistanceToGo");
         if (stepper1.distanceToGo() != 0)
             stepper1.run();
         if (stepper2.distanceToGo() != 0)
@@ -316,13 +314,7 @@ void syncMove(float maxSpeed, float accel)
             stepper3.run();
     }
     lcd.setCursor(0, 0);
-    lcd.print("SyncMoveDone");
-    stepper1.setMaxSpeed(maxSpeed);
-    stepper2.setMaxSpeed(maxSpeed);
-    stepper3.setMaxSpeed(maxSpeed);
-    stepper1.setAcceleration(accel);
-    stepper2.setAcceleration(accel);
-    stepper3.setAcceleration(accel);
+    lcd.print("DistanceToGo");
     return;
 }
 
@@ -335,10 +327,9 @@ float calcSync(float maxSpeed, float maxAccel, float maxDistance, AccelStepper s
     float stepperDis = stepper.distanceToGo();
     float stepperSpeed = fabs(maxSpeed) * (fabs(stepperDis) / fabs(maxDistance));
 
+    return (stepperSpeed < 0) ? fabs(stepperSpeed) : stepperSpeed;
     lcd.setCursor(0, 0);
     lcd.print("CalcSyncDone");
-
-    return (stepperSpeed < 0) ? fabs(stepperSpeed) : stepperSpeed;
 }
 
 // Function to find the largest number in an array
