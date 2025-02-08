@@ -61,9 +61,6 @@ void setup() {
 void loop() {
     handleUDPRequests();
     controlStepperMotors();
-
-
-  
 }
 
 void handleUDPRequests() {
@@ -277,7 +274,7 @@ void recallPresetB() {
     if (abs(stepper2.currentPosition() - presetAPositions[0]) > tolerance) {
         stepper3.moveTo(targetPositions[2]);
     }
-    
+
     syncMove(4000, 2000);
 
     // Send UDP confirmation
@@ -316,12 +313,12 @@ void syncMove(float maxSpeed, float accel)
     // Move the steppers in sync
     while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0 || stepper3.distanceToGo() != 0)
     {
-        if (stepper1.distanceToGo() != 0)
-            stepper1.run();
-        if (stepper2.distanceToGo() != 0)
-            stepper2.run();
-        if (stepper3.distanceToGo() != 0)
-            stepper3.run();
+        //if (stepper1.distanceToGo() != 0)
+        stepper1.run();
+        //if (stepper2.distanceToGo() != 0)
+        stepper2.run();
+        //if (stepper3.distanceToGo() != 0)
+        stepper3.run();
     }
     return;
 }
