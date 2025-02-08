@@ -234,17 +234,17 @@ void recallPresetA() {
         sendUDPMessage("PRESET_A_DONE");
         return;  // Exit the function early
     }
-    
+
     // Otherwise, move to preset A positions
     long targetPositions[] = { presetAPositions[0], presetAPositions[1], presetAPositions[2] };
 
-    if !(abs(stepper1.currentPosition() - presetAPositions[0]) <= tolerance) {
+    if (abs(stepper1.currentPosition() - presetAPositions[0]) > tolerance) {
         stepper1.moveTo(targetPositions[0]);
     }
-    if !(abs(stepper2.currentPosition() - presetAPositions[0]) <= tolerance) {
+    if (abs(stepper2.currentPosition() - presetAPositions[0]) > tolerance) {
         stepper2.moveTo(targetPositions[1]);
     }
-    if !(abs(stepper2.currentPosition() - presetAPositions[0]) <= tolerance) {
+    if (abs(stepper2.currentPosition() - presetAPositions[0]) > tolerance) {
         stepper3.moveTo(targetPositions[2]);
     }
 
