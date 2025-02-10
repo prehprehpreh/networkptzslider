@@ -7,7 +7,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
 # UDP Configuration
-UDP_IP = "192.168.0.225"  # Arduino's IP Address
+UDP_IP = "192.168.0.60"  # Arduino's IP Address
 UDP_PORT_SEND = 44158  # Port for sending
 UDP_PORT_RECEIVE = 44159  # Port for receiving (must match Arduino's sending port)
 
@@ -69,6 +69,8 @@ udp_receive_thread.start()
 
 def send_joystick_data(dt):
     pygame.event.pump()
+
+    # Check joystick axes
     x_axis_left = joystick.get_axis(0)
     x_axis_left = 0 if abs(x_axis_left) < DEADZONE else x_axis_left
     x_axis_right = joystick.get_axis(2)
@@ -78,7 +80,37 @@ def send_joystick_data(dt):
     message = f"SET_JOYSTICK {x_axis_left:.3f},{x_axis_right:.3f},{y_axis_right:.3f}"
     send_udp_message(message)
 
+    # Check for button presses (Print button states for debugging)
+    for i in range(joystick.get_numbuttons()):
+        button_state = joystick.get_button(i)
+        if button_state:
+            print(f"Button {i} is pressed.")
 
+    #increase speed on button press (D-pad)
+    if joystick.get_button(11):  
+        print("Increasing speed.")
+        send_udp_message("INCREASE_SPEED")
+    elif joystick.get_button(12):  
+        print("Decreasing speed.")
+        send_udp_message("DECREASE_SPEED")
+    elif joystick.get_button(2):  
+        print("Save_Preset_A")
+        send_udp_message("SAVE_A")
+    elif joystick.get_button(1):  
+        print("Save_Preset_B.")
+        send_udp_message("SAVE_B")
+    elif joystick.get_button(13):  
+        print("Recall Preset A")
+        send_udp_message("RECALL_A")
+    elif joystick.get_button(14):  
+        print("Recall Preset B")
+        send_udp_message("RECALL_B")
+    elif joystick.get_button(3):  
+        print("Loop_state_True")
+        set_loop_state(True)
+    elif joystick.get_button(0):  
+        print("Loop_state_False")
+        set_loop_state(False)
 
 class ControlApp(App):
     def build(self):
