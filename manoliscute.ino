@@ -7,7 +7,7 @@
 
 // Ethernet settings
 byte mac[] = { 0xA8, 0x61, 0x0A, 0xAE, 0x03, 0x30 };
-IPAddress ip(192, 168, 0, 225);
+//IPAddress ip(192, 168, 0, 225);
 unsigned int localPort = 44158;  // UDP port
 EthernetUDP Udp;
 char packetBuffer[255];
@@ -49,7 +49,8 @@ void setup() {
     multiStepper.addStepper(stepper3);
 
     lcd.begin(16, 2);
-    Ethernet.begin(mac, ip);
+    Ethernet.begin(mac);
+    //Ethernet.begin(mac, ip);
     Udp.begin(localPort);
     Serial.begin(9600);
 
@@ -85,21 +86,30 @@ void handleUDPRequests() {
             x_axis_value_left = x_axis_left_str.toFloat();
             x_axis_value_right = x_axis_right_str.toFloat();
             y_axis_value = y_axis_str.toFloat();
-        } else if (request.startsWith("SAVE_POS")) {
-            saveMotorPositions();
-        } else if (request.startsWith("RECALL_POS")) {
-            recallMotorPositions();
-        } else if (request.startsWith("SAVE_A")) {
-            savePresetA();
-        } else if (request.startsWith("SAVE_B")) {
-            savePresetB();
-        } else if (request.startsWith("RECALL_A")) {
-            recallPresetA();
-        } else if (request.startsWith("RECALL_B")) {
-            recallPresetB();
-        } else if (request.startsWith("UPDATE_LOOP")) {
-            loopPresets = request.substring(12) == "true";
-        }
+      } else if (request.startsWith("SAVE_POS")) {
+        saveMotorPositions();
+      } else if (request.startsWith("RECALL_POS")) {
+        recallMotorPositions();
+      } else if (request.startsWith("SAVE_A")) {
+        savePresetA();
+      } else if (request.startsWith("SAVE_B")) {
+        savePresetB();
+      } else if (request.startsWith("RECALL_A")) {
+        recallPresetA();
+      } else if (request.startsWith("RECALL_B")) {
+        recallPresetB();
+      } else if (request.startsWith("UPDATE_LOOP")) {
+        loopPresets = request.substring(12) == "true";
+      } else if (request.startsWith("INCREASE_SPEED")) {
+        msSpeed += 200;
+        Serial.print("Speed increased to: ");
+        Serial.println(msSpeed);
+      } else if (request.startsWith("DECREASE_SPEED")) {
+        msSpeed -= 200;
+        Serial.print("Speed decreased to: ");
+        Serial.println(msSpeed);
+      }
+
     }
 }
 
@@ -242,7 +252,7 @@ void recallPresetA() {
     lcd.setCursor(0, 0);
     lcd.print("PresetADone");
 
-    syncMove(4000, 2000);
+    syncMove(msSpeed, 400);
 
     // Send UDP confirmation
     sendUDPMessage("PRESET_A_DONE");
@@ -266,7 +276,7 @@ void recallPresetB() {
     stepper2.moveTo(targetPositions[1]);
     stepper3.moveTo(targetPositions[2]);
 
-    syncMove(4000, 2000);
+    syncMove(msSpeed, 400);
 
     // Send UDP confirmation
     sendUDPMessage("PRESET_B_DONE");
