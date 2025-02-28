@@ -14,9 +14,11 @@ UDP_PORT_SEND = 44158  # Port for sending
 UDP_PORT_RECEIVE = 44159  # Port for receiving (must match Arduino's sending port)
 
 # Declare global variables
-global x_axis_right, y_axis_right, loop_state, virtualloop_enabled, preset_a_slide, preset_b_slide
+global x_axis_right, y_axis_right, loop_state, virtualloop_enabled, preset_a_slide, preset_b_slide, trigger_left_mapped, trigger_right_mapped
 x_axis_right = 0.0
 y_axis_right = 0.0
+trigger_left_mapped = 0.0  # Add globals for triggers
+trigger_right_mapped = 0.0
 
 # Initialize UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -112,7 +114,7 @@ tolerance = 600
 
 # This function is called repeatedly to control the motor behavior
 def virtualloop(dt):
-    global virtualloop_enabled, preset_a_slide, preset_b_slide, preset_a_reached, preset_b_reached
+    global virtualloop_enabled, preset_a_slide, preset_b_slide, preset_a_reached, preset_b_reached, trigger_left_mapped, trigger_right_mapped
 
     if virtualloop_enabled:
         try:
@@ -130,15 +132,26 @@ def virtualloop(dt):
             else:
                 direction = -1.000  # Move away from the target, so we adjust towards it
 
-            # Send motor command in the calculated direction
-            send_udp_message(f"SET_JOYSTICK {direction},{x_axis_right:.3f},{y_axis_right:.3f},0.000,0.000")
+            # Send motor command with direction for Motor 1, live values for others
+            send_udp_message(f"SET_JOYSTICK {direction},{x_axis_right:.3f},{y_axis_right:.3f},{trigger_left_mapped:.3f},{trigger_right_mapped:.3f}")
+
+            # Check if we're within tolerance of the target preset
+            if motor1_pos >= target_position - tolerance and motor1_pos <= target_position + tolerance:
+                if target_position == preset_a_slide and not preset_a_reached:
+                    preset_a_reached = True
+                    print("Preset A reached. Moving to Preset B.")
+                    preset_b_reached = False  # Reset B flag
+                elif target_position == preset_b_slide and not preset_b_reached:
+                    preset_b_reached = True
+                    print("Preset B reached. Moving to Preset A.")
+                    preset_a_reached = False  # Reset A flag
 
         except Exception as e:
             print(f"Virtualloop Error: {e}")
 
 # Function to send joystick data with trigger values
 def send_joystick_data(dt):
-    global x_axis_right, y_axis_right  # Use the global joystick values
+    global x_axis_right, y_axis_right, trigger_left_mapped, trigger_right_mapped  # Update globals
     pygame.event.pump()
     
     # Get joystick axes
@@ -154,11 +167,7 @@ def send_joystick_data(dt):
     y_axis_left = 0 if abs(y_axis_left) < DEADZONE else y_axis_left
     x_axis_right = 0 if abs(x_axis_right) < DEADZONE else x_axis_right
     y_axis_right = 0 if abs(y_axis_right) < DEADZONE else y_axis_right
-
-    # Map triggers: -1 (rest) to 0, 1 (pressed) to direction
-    # Left Trigger: 0 (rest) to -1 (left motion)
     trigger_left_mapped = 0 if trigger_left < -0.9 else (trigger_left - (-1)) / 2 * -1  # -1 to 1 -> 0 to -1
-    # Right Trigger: 0 (rest) to 1 (right motion)
     trigger_right_mapped = 0 if trigger_right < -0.9 else (trigger_right - (-1)) / 2  # -1 to 1 -> 0 to 1
 
     # Debug: Print all axis states (optional, comment out if not needed)
