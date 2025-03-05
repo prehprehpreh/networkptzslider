@@ -44,9 +44,8 @@ DEADZONE = 0.01
 loop_state = False
 virtualloop_enabled = False
 
-# D-pad state tracking to avoid spamming
-last_dpad_up_state = False
-last_dpad_down_state = False
+# Button state tracking to avoid spamming
+last_button_states = [False] * joystick.get_numbuttons()  # Track all buttons
 
 def send_udp_message(message):
     print(f"Sending: {message}")
@@ -110,7 +109,7 @@ def update_preset_positions(message):
 preset_a_slide = 12641
 preset_b_slide = 17384
 
-# Flags to track if a preset is reached
+# Flags towelcome if a preset is reached
 preset_a_reached = False
 preset_b_reached = False
 
@@ -150,9 +149,9 @@ def virtualloop(dt):
         except Exception as e:
             print(f"Virtualloop Error: {e}")
 
-# Function to send joystick data with trigger values, button logging, and speed control
+# Function to send joystick data with trigger values, button logging, and controls
 def send_joystick_data(dt):
-    global x_axis_right, y_axis_right, trigger_left_mapped, trigger_right_mapped, last_dpad_up_state, last_dpad_down_state
+    global x_axis_right, y_axis_right, trigger_left_mapped, trigger_right_mapped, last_button_states, virtualloop_enabled
     pygame.event.pump()
     
     # Get joystick axes
@@ -176,19 +175,55 @@ def send_joystick_data(dt):
         if joystick.get_button(i):
             print(f"Button {i} pressed")
 
-    # D-pad control for speed (PS4 D-pad: up = button 11, down = button 12)
-    dpad_up = joystick.get_button(11)  # Up button
-    dpad_down = joystick.get_button(12)  # Down button
+    # Button controls with press detection
+    button_states = [joystick.get_button(i) for i in range(joystick.get_numbuttons())]
 
-    # Detect button press (not hold) to avoid spamming
-    if dpad_up and not last_dpad_up_state:
+    # Circle (Button 1): Save Preset B
+    if button_states[1] and not last_button_states[1]:
+        send_udp_message("SAVE_B")
+
+    # Square (Button 2): Save Preset A
+    if button_states[2] and not last_button_states[2]:
+        send_udp_message("SAVE_A")
+
+    # D-pad Left (Button 13): Recall Preset A
+    if button_states[13] and not last_button_states[13]:
+        send_udp_message("RECALL_A")
+
+    # D-pad Right (Button 14): Recall Preset B
+    if button_states[14] and not last_button_states[14]:
+        send_udp_message("RECALL_B")
+
+    # Triangle (Button 3): Loop Presets ON (same as Kivy button)
+    if button_states[3] and not last_button_states[3]:
+        send_udp_message("UPDATE_LOOP true")
+        set_loop_state(True)
+
+    # X (Button 0): Loop Presets OFF (same as Kivy button)
+    if button_states[0] and not last_button_states[0]:
+        send_udp_message("UPDATE_LOOP false")
+        set_loop_state(False)
+
+    # D-pad Up (Button 11): Set virtualloop true
+    if button_states[11] and not last_button_states[11]:
+        virtualloop_enabled = True
+        print("Virtualloop enabled")
+
+    # D-pad Down (Button 12): Set virtualloop false
+    if button_states[12] and not last_button_states[12]:
+        virtualloop_enabled = False
+        print("Virtualloop disabled")
+
+    # Button 10: Increase msSpeed
+    if button_states[10] and not last_button_states[10]:
         send_udp_message("INCREASE_SPEED")
-    if dpad_down and not last_dpad_down_state:
+
+    # Button 9: Decrease msSpeed
+    if button_states[9] and not last_button_states[9]:
         send_udp_message("DECREASE_SPEED")
 
-    # Update last states
-    last_dpad_up_state = dpad_up
-    last_dpad_down_state = dpad_down
+    # Update last button states
+    last_button_states = button_states
 
     # Disable left joystick movement when virtualloop is enabled
     if virtualloop_enabled:
@@ -224,13 +259,13 @@ class ControlApp(App):
             ("Save Preset B", "SAVE_B"),
             ("Recall Preset A", "RECALL_A"),
             ("Recall Preset B", "RECALL_B"),
-            ("Loop Presets ON", lambda x: set_loop_state(True)),
-            ("Loop Presets OFF", lambda x: set_loop_state(False)),
+            ("Loop Presets ON", lambda x: send_udp_message("UPDATE_LOOP true") or set_loop_state(True)),
+            ("Loop Presets OFF", lambda x: send_udp_message("UPDATE_LOOP false") or set_loop_state(False)),
             ("Virtualloop ON", lambda x: set_virtualloop_state(True)),
             ("Virtualloop OFF", lambda x: set_virtualloop_state(False)),
         ]
         for text, cmd in buttons:
-            layout.add_widget(Button(text=text, on_press=lambda x, c=cmd: send_udp_message(c) if isinstance(c, str) else c(x)))
+            layout.add_widget(Button(text=text, on_press=lambda x, c=cmd: c(x)))
         
         return layout
 
@@ -245,6 +280,7 @@ def set_loop_state(state):
 def set_virtualloop_state(state):
     global virtualloop_enabled
     virtualloop_enabled = state
+    print(f"Virtualloop set to {state}")
 
 Clock.schedule_interval(send_joystick_data, 0.1)
 Clock.schedule_interval(virtualloop, 0.1)
