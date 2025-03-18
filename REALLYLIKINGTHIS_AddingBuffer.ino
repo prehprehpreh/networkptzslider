@@ -22,7 +22,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 const int stepPin1 = 3, dirPin1 = 2, ms1Pin1 = 10, ms2Pin1 = 11;
 const int stepPin2 = 31, dirPin2 = 30, ms1Pin2 = 32, ms2Pin2 = 33;
 const int stepPin3 = 45, dirPin3 = 44, ms1Pin3 = 40, ms2Pin3 = 41;
-const int stepPin4 = 48, dirPin4 = 49, ms1Pin4 = 34, ms2Pin4 = 35, tmcEnPin4 = 50;
+const int stepPin4 = 48, dirPin4 = 49, ms1Pin4 = 37, ms2Pin4 = 35, tmcEnPin4 = 50;
 
 AccelStepper stepper1(AccelStepper::DRIVER, stepPin1, dirPin1);
 AccelStepper stepper2(AccelStepper::DRIVER, stepPin2, dirPin2);
@@ -38,19 +38,19 @@ bool loopPresets = false;
 long presetAPositions[] = {0, 0, 0}, presetBPositions[] = {0, 0, 0};
 
 // Motor control constants
-const int max_speed_left = 2000;
+const int max_speed_left = 600;
 const int max_speed_right = 100;
 const int max_speed_y = 100;
-const int max_speed_zoom = 200;
+const int max_speed_zoom = 75;
 
-const float acceleration_rate_left = 3;  // Increased for faster ramp-up
-const float deceleration_rate_left = 3;  // Matching deceleration
-const float acceleration_rate_right = 0.1;
-const float deceleration_rate_right = 0.1;
-const float acceleration_rate_y = 0.1;
-const float deceleration_rate_y = 0.1;
-const float acceleration_rate_zoom = 1;
-const float deceleration_rate_zoom = 1;
+const float acceleration_rate_left = 10;  // Increased for faster ramp-up
+const float deceleration_rate_left = 10;  // Matching deceleration
+const float acceleration_rate_right = 0.6;
+const float deceleration_rate_right = 0.6;
+const float acceleration_rate_y = 0.6;
+const float deceleration_rate_y = 0.6;
+const float acceleration_rate_zoom = 0.75;
+const float deceleration_rate_zoom = 0.75;
 
 const int deadzone = 10;
 
@@ -101,7 +101,7 @@ void loop() {
     stepper2.runSpeed();
     stepper3.runSpeed();
     stepper4.runSpeed();
-    delayMicroseconds(1000);  // 1kHz loop rate
+    delayMicroseconds(3000);  // 1kHz loop rate
 }
 
 void handleUDPRequests() {
